@@ -23,13 +23,16 @@ LOG_DIR = os.path.join(USER_DATA_DIR, 'query_logs')
 STATIC_DIR = os.path.join(BASE_DIR, 'backend', 'static')
 
 @app.on_event('startup')
+
 async def startup():
     try:
+        from init_kb import init_builtin_knowledge
         kb = get_knowledge_base()
-        if kb.get_stats()['total_chunks'] == 0:
-            import subprocess
-            subprocess.run([sys.executable, os.path.join(BASE_DIR, 'init_kb.py')])
-    except: pass
+        if kb.get_stats()["total_chunks"] == 0:
+            init_builtin_knowledge(force=True)
+    except Exception as e:
+        print(f"Startup init error: {e}")
+
 
 class ChatRequest(BaseModel):
     query: str
