@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache">
-<title>MatDEM Assistant</title>
+<title>MatDEM 智能答疑助手</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Microsoft YaHei',sans-serif}
@@ -54,43 +54,43 @@ body{display:flex;background:#f0f2f5}
 </head>
 <body>
 <aside class="sidebar">
-  <h1>MatDEM Assistant</h1>
+  <h1>MatDEM 智能答疑助手</h1>
   <div class="sidebar-section">
-    <h3>Knowledge Base</h3>
-    <div class="kb-stats" id="kbStats">Loading...</div>
+    <h3>知识库状态</h3>
+    <div class="kb-stats" id="kbStats">连接中...</div>
   </div>
   <div class="sidebar-section">
-    <h3>My Files</h3>
-    <div id="userFiles" style="font-size:12px;max-height:180px;overflow-y:auto">Loading...</div>
+    <h3>我的文件</h3>
+    <div id="userFiles" style="font-size:12px;max-height:180px;overflow-y:auto">连接中...</div>
   </div>
   <div class="sidebar-section">
-    <h3>Upload</h3>
-    <div class="upload-area" id="uploadArea"><p>Click or drop file</p><p style="font-size:10px;opacity:0.6">PDF/TXT/MD/.m</p></div>
+    <h3>上传文档</h3>
+    <div class="upload-area" id="uploadArea"><p>点击或拖拽上传文件</p><p style="font-size:10px;opacity:0.6">支持 PDF/TXT/MD/.m</p></div>
     <input type="file" id="fileInput" accept=".pdf,.txt,.md,.m,.py">
     <div class="upload-status" id="uploadStatus"></div>
   </div>
   <div class="sidebar-section">
-    <button class="btn btn-blue" id="rebuildKbBtn">Rebuild KB</button>
-    <button class="btn btn-red" id="clearKbBtn">Clear User</button>
+    <button class="btn btn-blue" id="rebuildKbBtn">重建知识库</button>
+    <button class="btn btn-red" id="clearKbBtn">清空用户</button>
   </div>
 </aside>
 <div class="chat-container">
-  <div class="chat-header"><span>MatDEM Q&A</span></div>
+  <div class="chat-header"><span>MatDEM 离散元分析 · 智能问答</span></div>
   <div class="chat-messages" id="chatMessages">
     <div class="empty-state" id="emptyState">
       <div class="icon">*</div>
-      <h2>MatDEM Assistant</h2>
-      <p>Upload files or ask questions about MatDEM.</p>
+      <h2>MatDEM 智能答疑助手</h2>
+      <p>上传文档 files or ask questions about MatDEM.</p>
       <div class="suggestions">
-        <span class="suggestion-chip" data-query="How to use ContactModel?">ContactModel</span>
-        <span class="suggestion-chip" data-query="What does build function do?">build function</span>
-        <span class="suggestion-chip" data-query="How to create a particle model?">particle model</span>
+        <span class="suggestion-chip" data-query="ContactModel 怎么用">ContactModel</span>
+        <span class="suggestion-chip" data-query="build 函数的作用">build function</span>
+        <span class="suggestion-chip" data-query="如何创建颗粒模型">particle model</span>
       </div>
     </div>
   </div>
   <div class="chat-input-area">
     <div class="input-wrapper">
-      <textarea id="userInput" rows="1" placeholder="Ask about MatDEM..."></textarea>
+      <textarea id="userInput" rows="1" placeholder="输入 MatDEM 问题..."></textarea>
       <button id="sendBtn" onclick="sendMessage()">></button>
     </div>
   </div>
@@ -104,8 +104,8 @@ try { var c = document.cookie.match(/matdem_uid=([^;]+)/); if (c && c[1]) MATDEM
 document.addEventListener('DOMContentLoaded', function() {
   loadKBStatus(); loadUserFiles();
   document.querySelectorAll('.suggestion-chip').forEach(function(c) { c.onclick = function() { document.getElementById('userInput').value = this.dataset.query; sendMessage(); }; });
-  document.getElementById('rebuildKbBtn').onclick = function() { if (!confirm('Rebuild?')) return; fetch('/api/kb/rebuild?uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus()}); };
-  document.getElementById('clearKbBtn').onclick = function() { if (!confirm('Clear your files?')) return; fetch('/api/kb/clear?uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus();loadUserFiles()}); };
+  document.getElementById('rebuildKbBtn').onclick = function() { if (!confirm('确定重建知识库？')) return; fetch('/api/kb/rebuild？uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus()}); };
+  document.getElementById('clearKbBtn').onclick = function() { if (!confirm('确定清空用户文件？')) return; fetch('/api/kb/clear？uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus();loadUserFiles()}); };
   var upArea = document.getElementById('uploadArea');
   var upInput = document.getElementById('fileInput');
   upArea.onclick = function() { upInput.click(); };
@@ -118,29 +118,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function loadKBStatus() {
   fetch('/api/kb/status').then(r=>r.json()).then(d=>{
-    document.getElementById('kbStats').innerHTML = 'Chunks: <b>'+d.total_chunks+'</b><br>Builtin: <b>'+(d.builtin_chunks||0)+'</b><br>User: <b>'+(d.user_chunks||0)+'</b>';
-  }).catch(function() { document.getElementById('kbStats').textContent = 'Disconnected'; });
+    document.getElementById('kbStats').innerHTML = '文本块： <b>'+d.total_chunks+'</b><br>内置： <b>'+(d.builtin_chunks||0)+'</b><br>用户： <b>'+(d.user_chunks||0)+'</b>';
+  }).catch(function() { document.getElementById('kbStats').textContent = '无法连接服务器'; });
 }
 
 function loadUserFiles() {
-  fetch('/api/user/files?uid='+MATDEM_UID).then(r=>r.json()).then(d=>{
+  fetch('/api/user/files？uid='+MATDEM_UID).then(r=>r.json()).then(d=>{
     var el = document.getElementById('userFiles');
-    if (!d.files||d.files.length===0) { el.innerHTML = '<span style="color:#888">No files</span>'; return; }
+    if (!d.files||d.files.length===0) { el.innerHTML = '<span style="color:#888">暂无文件</span>'; return; }
     var h = '';
     d.files.forEach(function(f) { h += '<div class="user-file-row"><span title="'+esc(f.name)+'" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">'+f.name+'</span><span class="del" onclick="deleteFile(\''+f.name.replace(/'/g,"\\'")+'\')">x</span></div>'; });
     el.innerHTML = h;
-  }).catch(function() { document.getElementById('userFiles').textContent = 'Load failed'; });
+  }).catch(function() { document.getElementById('userFiles').textContent = '加载失败'; });
 }
 
 function deleteFile(name) {
-  if (!confirm('Delete '+name+'?')) return;
+  if (!confirm('删除 '+name+'？')) return;
   var fd = new FormData(); fd.append('filename', name); fd.append('uid', MATDEM_UID);
   fetch('/api/user/files/delete', {method:'POST',body:fd}).then(r=>r.json()).then(d=>{alert(d.message);loadUserFiles();loadKBStatus()});
 }
 
 function uploadFile(file) {
   var st = document.getElementById('uploadStatus');
-  st.textContent = 'Uploading: '+file.name+'...';
+  st.textContent = '上传文档ing: '+file.name+'...';
   var fd = new FormData(); fd.append('file', file, file.name); fd.append('uid', MATDEM_UID);
   fetch('/api/kb/upload', {method:'POST',body:fd}).then(r=>r.json()).then(d=>{
     if (d.success) {
@@ -150,10 +150,10 @@ function uploadFile(file) {
       if (empty) empty.style.display = 'none';
       var div = document.createElement('div');
       div.className = 'message assistant';
-      div.innerHTML = '<div class="avatar">*</div><div class="bubble" style="background:#fff8e1;font-size:13px">File uploaded: <b>'+esc(file.name)+'</b></div>';
+      div.innerHTML = '<div class="avatar">*</div><div class="bubble" style="background:#fff8e1;font-size:13px">文件已上传： <b>'+esc(file.name)+'</b></div>';
       document.getElementById('chatMessages').appendChild(div);
       document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-      CHAT_HISTORY.push({role:'user',content:'[System] File uploaded: '+file.name});
+      CHAT_HISTORY.push({role:'user',content:'[System] 文件已上传： '+file.name});
       if (CHAT_HISTORY.length > 20) CHAT_HISTORY = CHAT_HISTORY.slice(-20);
     } else { st.textContent = 'Failed: '+(d.detail||'unknown'); }
   }).catch(function(err) { st.textContent = 'Error: '+err.message; });
@@ -176,7 +176,7 @@ function sendMessage() {
   var bubble = aiMsg.querySelector('.bubble');
   fetch('/api/chat', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:query,uid:MATDEM_UID,history:CHAT_HISTORY.slice(0,-1),stream:true})})
     .then(function(resp) {
-      if (!resp.ok) { bubble.textContent = 'Error ('+resp.status+')'; IS_STREAMING=false; document.getElementById('sendBtn').disabled=false; return; }
+      if (!resp.ok) { bubble.textContent = '错误 ('+resp.status+')'; IS_STREAMING=false; document.getElementById('sendBtn').disabled=false; return; }
       var reader = resp.body.getReader();
       var decoder = new TextDecoder();
       var full = '';
@@ -196,7 +196,7 @@ function sendMessage() {
 function addMessage(role, content, placeholder) {
   var div = document.createElement('div');
   div.className = 'message '+role;
-  var avatar = role === 'user' ? 'U' : 'M';
+  var avatar = role === 'user' ？ 'U' : 'M';
   div.innerHTML = '<div class="avatar">'+avatar+'</div><div class="bubble">'+renderMD(content)+'</div>';
   if (placeholder) div.querySelector('.bubble').innerHTML = '...';
   document.getElementById('chatMessages').appendChild(div);
@@ -206,7 +206,7 @@ function addMessage(role, content, placeholder) {
 
 function renderMD(text) {
   if (!text) return '';
-  return text.replace(/```(\w*)\n([\s\S]*?)```/g, function(_,lang,code){return '<pre><code>'+esc(code.trim())+'</code></pre>'}).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  return text.replace(/```(\w*)\n([\s\S]*？)```/g, function(_,lang,code){return '<pre><code>'+esc(code.trim())+'</code></pre>'}).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.+？)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
 }
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
