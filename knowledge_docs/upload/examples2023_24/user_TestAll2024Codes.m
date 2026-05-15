@@ -1,0 +1,19 @@
+%run the code to test all the examples
+clear
+MatDEMfile('examples2024/user_Blender0.m');
+MatDEMfile('examples2024/user_Blender0_makeFiber.m');
+MatDEMfile('examples2024/user_Blender1.m');
+MatDEMfile('examples2024/user_Blender1_Fiber.m');
+MatDEMfile('examples2024/user_Blender1_Water.m');
+MatDEMfile('examples2024/user_BoxShock1.m');
+MatDEMfile('examples2024/user_BoxShock2.m');
+MatDEMfile('examples2024/user_BoxShock3.m');
+MatDEMfile('examples2024/user_jacked_pipe_piles1.m');
+MatDEMfile('examples2024/user_jacked_pipe_piles2.m');
+MatDEMfile('examples2024/user_makeforcechain.m');
+MatDEMfile('examples2024/user_Mixer1.m');
+MatDEMfile('examples2024/user_Mixer2.m');
+MatDEMfile('examples2024/user_SandProuction0.m');
+MatDEMfile('examples2024/user_SandProuction1.m');
+MatDEMfile('examples2024/user_SandProuction2.m');
+MatDEMfile('examples2024/user_SandProuction3.m');

@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>MatDEM Assistant</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Microsoft YaHei',sans-serif}
+body{display:flex;background:#f0f2f5}
+.sidebar{width:300px;background:#1a1a2e;color:#c8d6e5;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar h1{padding:18px 16px 12px;font-size:16px;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sidebar-section{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-section h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);margin-bottom:8px}
+.kb-stats{font-size:12px;line-height:1.7}
+.kb-stats b{color:#e67e22}
+.upload-area{border:2px dashed rgba(255,255,255,0.2);border-radius:8px;padding:14px;text-align:center;cursor:pointer;font-size:12px;transition:all 0.2s}
+.upload-area:hover{border-color:#e67e22;background:rgba(230,126,34,0.1)}
+.upload-area input{display:none}
+.upload-status{font-size:11px;margin-top:6px;min-height:16px}
+.btn{display:block;width:100%;padding:8px;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;margin-top:6px}
+.btn-blue{background:#2980b9;color:#fff}
+.btn-red{background:transparent;color:#e74c3c;border:1px solid #e74c3c}
+.chat-container{flex:1;display:flex;flex-direction:column;background:#fff;min-height:0}
+.chat-header{padding:12px 20px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-messages{flex:1 1 auto;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.message{display:flex;gap:10px;max-width:85%}
+.message.user{align-self:flex-end;flex-direction:row-reverse}
+.message .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.message.user .avatar{background:#e67e22;color:#fff}
+.message.assistant .avatar{background:#e8e8e8}
+.message .bubble{padding:10px 14px;border-radius:12px;line-height:1.6;font-size:14px;word-break:break-word}
+.message.user .bubble{background:#e3f0ff;color:#333}
+.message.assistant .bubble{background:#f5f5f5;color:#333;white-space:pre-wrap}
+.message.assistant .bubble code{background:#e8e8e8;padding:2px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:13px}
+.message.assistant .bubble pre{background:#1a1a2e;color:#e0e0e0;padding:12px 14px;border-radius:8px;overflow-x:auto;margin:8px 0;font-size:13px}
+.message.assistant .bubble pre code{background:none;padding:0;color:inherit}
+.chat-input-area{padding:12px 20px;border-top:1px solid #e0e0e0;flex-shrink:0}
+.input-wrapper{display:flex;gap:10px;align-items:flex-end;background:#f0f2f5;border-radius:12px;padding:8px 12px;border:1px solid #e0e0e0}
+.input-wrapper:focus-within{border-color:#e67e22}
+#userInput{flex:1;border:none;background:transparent;font-size:14px;resize:none;outline:none;font-family:inherit;max-height:100px;min-height:24px;line-height:1.5}
+#sendBtn{background:#e67e22;color:#fff;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:16px}
+#sendBtn:disabled{background:#ccc;cursor:not-allowed}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;gap:10px}
+.empty-state .icon{font-size:48px}
+.empty-state h2{font-size:20px;color:#333}
+.suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;justify-content:center}
+.suggestion-chip{padding:7px 14px;background:#fff;border:1px solid #e0e0e0;border-radius:20px;font-size:13px;cursor:pointer}
+.suggestion-chip:hover{border-color:#e67e22;color:#e67e22}
+.user-file-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px}
+.user-file-row .del{cursor:pointer;color:#e74c3c}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <h1>MatDEM Assistant</h1>
+  <div class="sidebar-section">
+    <h3>Knowledge Base</h3>
+    <div class="kb-stats" id="kbStats">Loading...</div>
+  </div>
+  <div class="sidebar-section">
+    <h3>My Files</h3>
+    <div id="userFiles" style="font-size:12px;max-height:180px;overflow-y:auto">Loading...</div>
+  </div>
+  <div class="sidebar-section">
+    <h3>Upload</h3>
+    <div class="upload-area" id="uploadArea"><p>Click or drop file</p><p style="font-size:10px;opacity:0.6">PDF/TXT/MD/.m</p></div>
+    <input type="file" id="fileInput" accept=".pdf,.txt,.md,.m,.py">
+    <div class="upload-status" id="uploadStatus"></div>
+  </div>
+  <div class="sidebar-section">
+    <button class="btn btn-blue" id="rebuildKbBtn">Rebuild KB</button>
+    <button class="btn btn-red" id="clearKbBtn">Clear User</button>
+  </div>
+</aside>
+<div class="chat-container">
+  <div class="chat-header"><span>MatDEM Q&A</span></div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="empty-state" id="emptyState">
+      <div class="icon">*</div>
+      <h2>MatDEM Assistant</h2>
+      <p>Upload files or ask questions about MatDEM.</p>
+      <div class="suggestions">
+        <span class="suggestion-chip" data-query="How to use ContactModel?">ContactModel</span>
+        <span class="suggestion-chip" data-query="What does build function do?">build function</span>
+        <span class="suggestion-chip" data-query="How to create a particle model?">particle model</span>
+      </div>
+    </div>
+  </div>
+  <div class="chat-input-area">
+    <div class="input-wrapper">
+      <textarea id="userInput" rows="1" placeholder="Ask about MatDEM..."></textarea>
+      <button id="sendBtn" onclick="sendMessage()">></button>
+    </div>
+  </div>
+</div>
+<script>
+var CHAT_HISTORY = [];
+var IS_STREAMING = false;
+var MATDEM_UID = 'default';
+try { var c = document.cookie.match(/matdem_uid=([^;]+)/); if (c && c[1]) MATDEM_UID = c[1]; } catch(e) {}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadKBStatus(); loadUserFiles();
+  document.querySelectorAll('.suggestion-chip').forEach(function(c) { c.onclick = function() { document.getElementById('userInput').value = this.dataset.query; sendMessage(); }; });
+  document.getElementById('rebuildKbBtn').onclick = function() { if (!confirm('Rebuild?')) return; fetch('/api/kb/rebuild?uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus()}); };
+  document.getElementById('clearKbBtn').onclick = function() { if (!confirm('Clear your files?')) return; fetch('/api/kb/clear?uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus();loadUserFiles()}); };
+  var upArea = document.getElementById('uploadArea');
+  var upInput = document.getElementById('fileInput');
+  upArea.onclick = function() { upInput.click(); };
+  upArea.ondragover = function(e) { e.preventDefault(); upArea.style.borderColor = '#e67e22'; };
+  upArea.ondragleave = function() { upArea.style.borderColor = ''; };
+  upArea.ondrop = function(e) { e.preventDefault(); upArea.style.borderColor = ''; if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]); };
+  upInput.onchange = function() { if (upInput.files[0]) uploadFile(upInput.files[0]); };
+  document.getElementById('userInput').addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+});
+
+function loadKBStatus() {
+  fetch('/api/kb/status').then(r=>r.json()).then(d=>{
+    document.getElementById('kbStats').innerHTML = 'Chunks: <b>'+d.total_chunks+'</b><br>Builtin: <b>'+(d.builtin_chunks||0)+'</b><br>User: <b>'+(d.user_chunks||0)+'</b>';
+  }).catch(function() { document.getElementById('kbStats').textContent = 'Disconnected'; });
+}
+
+function loadUserFiles() {
+  fetch('/api/user/files?uid='+MATDEM_UID).then(r=>r.json()).then(d=>{
+    var el = document.getElementById('userFiles');
+    if (!d.files||d.files.length===0) { el.innerHTML = '<span style="color:#888">No files</span>'; return; }
+    var h = '';
+    d.files.forEach(function(f) { h += '<div class="user-file-row"><span title="'+esc(f.name)+'" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">'+f.name+'</span><span class="del" onclick="deleteFile(\''+f.name.replace(/'/g,"\\'")+'\')">x</span></div>'; });
+    el.innerHTML = h;
+  }).catch(function() { document.getElementById('userFiles').textContent = 'Load failed'; });
+}
+
+function deleteFile(name) {
+  if (!confirm('Delete '+name+'?')) return;
+  var fd = new FormData(); fd.append('filename', name); fd.append('uid', MATDEM_UID);
+  fetch('/api/user/files/delete', {method:'POST',body:fd}).then(r=>r.json()).then(d=>{alert(d.message);loadUserFiles();loadKBStatus()});
+}
+
+function uploadFile(file) {
+  var st = document.getElementById('uploadStatus');
+  st.textContent = 'Uploading: '+file.name+'...';
+  var fd = new FormData(); fd.append('file', file, file.name); fd.append('uid', MATDEM_UID);
+  fetch('/api/kb/upload', {method:'POST',body:fd}).then(r=>r.json()).then(d=>{
+    if (d.success) {
+      st.textContent = 'OK: '+d.message;
+      loadKBStatus(); loadUserFiles();
+      var empty = document.getElementById('emptyState');
+      if (empty) empty.style.display = 'none';
+      var div = document.createElement('div');
+      div.className = 'message assistant';
+      div.innerHTML = '<div class="avatar">*</div><div class="bubble" style="background:#fff8e1;font-size:13px">File uploaded: <b>'+esc(file.name)+'</b></div>';
+      document.getElementById('chatMessages').appendChild(div);
+      document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+      CHAT_HISTORY.push({role:'user',content:'[System] File uploaded: '+file.name});
+      if (CHAT_HISTORY.length > 20) CHAT_HISTORY = CHAT_HISTORY.slice(-20);
+    } else { st.textContent = 'Failed: '+(d.detail||'unknown'); }
+  }).catch(function(err) { st.textContent = 'Error: '+err.message; });
+}
+
+function sendMessage() {
+  if (IS_STREAMING) return;
+  var input = document.getElementById('userInput');
+  var query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+  var empty = document.getElementById('emptyState');
+  if (empty) empty.style.display = 'none';
+  addMessage('user', query);
+  CHAT_HISTORY.push({role:'user',content:query});
+  if (CHAT_HISTORY.length > 20) CHAT_HISTORY = CHAT_HISTORY.slice(-20);
+  IS_STREAMING = true;
+  document.getElementById('sendBtn').disabled = true;
+  var aiMsg = addMessage('assistant','',true);
+  var bubble = aiMsg.querySelector('.bubble');
+  fetch('/api/chat', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:query,uid:MATDEM_UID,history:CHAT_HISTORY.slice(0,-1),stream:true})})
+    .then(function(resp) {
+      if (!resp.ok) { bubble.textContent = 'Error ('+resp.status+')'; IS_STREAMING=false; document.getElementById('sendBtn').disabled=false; return; }
+      var reader = resp.body.getReader();
+      var decoder = new TextDecoder();
+      var full = '';
+      function read() {
+        reader.read().then(function(r) {
+          if (r.done) { CHAT_HISTORY.push({role:'assistant',content:full}); if(CHAT_HISTORY.length>20)CHAT_HISTORY=CHAT_HISTORY.slice(-20); IS_STREAMING=false; document.getElementById('sendBtn').disabled=false; document.getElementById('userInput').focus(); return; }
+          full += decoder.decode(r.value,{stream:true});
+          bubble.innerHTML = renderMD(full);
+          document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+          read();
+        });
+      }
+      read();
+    }).catch(function(err) { bubble.textContent = 'Error: '+err.message; IS_STREAMING=false; document.getElementById('sendBtn').disabled=false; });
+}
+
+function addMessage(role, content, placeholder) {
+  var div = document.createElement('div');
+  div.className = 'message '+role;
+  var avatar = role === 'user' ? 'U' : 'M';
+  div.innerHTML = '<div class="avatar">'+avatar+'</div><div class="bubble">'+renderMD(content)+'</div>';
+  if (placeholder) div.querySelector('.bubble').innerHTML = '...';
+  document.getElementById('chatMessages').appendChild(div);
+  document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+  return div;
+}
+
+function renderMD(text) {
+  if (!text) return '';
+  return text.replace(/```(\w*)\n([\s\S]*?)```/g, function(_,lang,code){return '<pre><code>'+esc(code.trim())+'</code></pre>'}).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+}
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>

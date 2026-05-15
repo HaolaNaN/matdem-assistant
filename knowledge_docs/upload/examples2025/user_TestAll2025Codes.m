@@ -1,0 +1,19 @@
+%run the code to test all the examples
+clear
+MatDEMfile('examples2025/user_BoxFramePeriod1.m');
+MatDEMfile('examples2025/user_BoxFramePeriod2.m');
+MatDEMfile('examples2025/user_BoxFramePeriod3.m');
+MatDEMfile('examples2025/user_BoxNonlinear1.m');
+MatDEMfile('examples2025/user_BoxNonlinear2.m');
+MatDEMfile('examples2025/user_BoxNonlinear3.m');
+MatDEMfile('examples2025/user_SublevelCaving1.m');
+MatDEMfile('examples2025/user_SublevelCaving2.m');
+MatDEMfile('examples2025/user_SublevelCaving3.m');
+MatDEMfile('examples2025/user_SublevelCaving4.m');
+MatDEMfile('examples2025/user_SublevelCaving5.m');
+MatDEMfile('examples2025/user_SublevelCaving6.m');
+MatDEMfile('examples2025/user_makeSeedDevice1.m');
+MatDEMfile('examples2025/user_makeSeedDevice2.m');
+%MatDEMfile('examples2025/user_PoreAdsorption1.m');
+%MatDEMfile('examples2025/user_PoreAdsorption2.m');
+%MatDEMfile('examples2025/user_PoreAdsorption3.m');

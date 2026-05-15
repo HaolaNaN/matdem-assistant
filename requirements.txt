@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+openai
+pydantic
+python-multipart
+duckduckgo-search
+pypdf
+python-dotenv
+httpx
+markdown
