@@ -104,8 +104,8 @@ try { var c = document.cookie.match(/matdem_uid=([^;]+)/); if (c && c[1]) MATDEM
 document.addEventListener('DOMContentLoaded', function() {
   loadKBStatus(); loadUserFiles();
   document.querySelectorAll('.suggestion-chip').forEach(function(c) { c.onclick = function() { document.getElementById('userInput').value = this.dataset.query; sendMessage(); }; });
-  document.getElementById('rebuildKbBtn').onclick = function() { if (!confirm('确定重建知识库？')) return; fetch('/api/kb/rebuild？uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus()}); };
-  document.getElementById('clearKbBtn').onclick = function() { if (!confirm('确定清空用户文件？')) return; fetch('/api/kb/clear？uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus();loadUserFiles()}); };
+  document.getElementById('rebuildKbBtn').onclick = function() { if (!confirm('确定重建知识库？')) return; fetch('/api/kb/rebuild?uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus()}); };
+  document.getElementById('clearKbBtn').onclick = function() { if (!confirm('确定清空用户文件？')) return; fetch('/api/kb/clear?uid='+MATDEM_UID,{method:'POST'}).then(r=>r.json()).then(d=>{alert(d.message);loadKBStatus();loadUserFiles()}); };
   var upArea = document.getElementById('uploadArea');
   var upInput = document.getElementById('fileInput');
   upArea.onclick = function() { upInput.click(); };
@@ -123,7 +123,7 @@ function loadKBStatus() {
 }
 
 function loadUserFiles() {
-  fetch('/api/user/files？uid='+MATDEM_UID).then(r=>r.json()).then(d=>{
+  fetch('/api/user/files?uid='+MATDEM_UID).then(r=>r.json()).then(d=>{
     var el = document.getElementById('userFiles');
     if (!d.files||d.files.length===0) { el.innerHTML = '<span style="color:#888">暂无文件</span>'; return; }
     var h = '';
@@ -196,7 +196,7 @@ function sendMessage() {
 function addMessage(role, content, placeholder) {
   var div = document.createElement('div');
   div.className = 'message '+role;
-  var avatar = role === 'user' ？ 'U' : 'M';
+  var avatar = role === 'user' ? 'U' : 'M';
   div.innerHTML = '<div class="avatar">'+avatar+'</div><div class="bubble">'+renderMD(content)+'</div>';
   if (placeholder) div.querySelector('.bubble').innerHTML = '...';
   document.getElementById('chatMessages').appendChild(div);
@@ -206,7 +206,7 @@ function addMessage(role, content, placeholder) {
 
 function renderMD(text) {
   if (!text) return '';
-  return text.replace(/```(\w*)\n([\s\S]*？)```/g, function(_,lang,code){return '<pre><code>'+esc(code.trim())+'</code></pre>'}).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.+？)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  return text.replace(/```(\w*)\n([\s\S]*?)```/g, function(_,lang,code){return '<pre><code>'+esc(code.trim())+'</code></pre>'}).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
 }
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
