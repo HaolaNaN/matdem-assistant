@@ -23,20 +23,28 @@ class QARagEngine:
         except: pass
 
     def _build_context(self, query):
-        results = self.kb.search(query, top_k=10)
-        if not results: return ''
-        builtin = [r for r in results if r.get('is_builtin') and r['score'] >= 0.3]
-        user = [r for r in results if not r.get('is_builtin') and r['score'] >= 0.15]
+        results = self.kb.search(query, top_k=15)
+        if not results:
+            return ""
+        builtin = [r for r in results if r.get("is_builtin") and r["score"] >= 0.2]
+        user = [r for r in results if not r.get("is_builtin") and r["score"] >= 0.1]
         lines = []
         if builtin:
-            lines.append('[Builtin KB - function signatures only, no source code]')
-            for i, r in enumerate(builtin[:3], 1):
-                c = r['content']; lines.append(f'[{i}] source:{r["source"]} (relevance:{r["score"]:.2f})'); lines.append(c[:600] + '...' if len(c)>600 else c); lines.append('')
+            lines.append("[Builtin KB - function signatures only]")
+            for i, r in enumerate(builtin[:5], 1):
+                c = r["content"]
+                lines.append(f"[{i}] source:{r['source']} (relevance:{r['score']:.2f})")
+                lines.append(c[:600])
+                lines.append("")
         if user:
-            lines.append('[User-uploaded KB - can analyze freely]')
-            for i, r in enumerate(user[:5], 1):
-                c = r['content']; lines.append(f'[{i}] source:{r["source"]} (relevance:{r["score"]:.2f})'); lines.append(c[:800] + '...' if len(c)>800 else c); lines.append('')
-        return chr(10).join(lines) if lines else ''
+            lines.append("[User-uploaded KB - analyze freely]")
+            for i, r in enumerate(user[:8], 1):
+                c = r["content"]
+                lines.append(f"[{i}] source:{r['source']} (relevance:{r['score']:.2f})")
+                lines.append(c[:1000])
+                lines.append("")
+        return "\n".join(lines) if lines else ""
+
 
     async def answer_stream(self, query, history=None, uid='default'):
         is_safe, warning = security_filter.check_query(query)
